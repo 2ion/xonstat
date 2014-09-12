@@ -1,0 +1,13 @@
+
+__  _____  _ __  ___| |_ __ _| |_ 
+\ \/ / _ \| '_ \/ __| __/ _` | __|
+ >  < (_) | | | \__ \ || (_| | |_ 
+/_/\_\___/|_| |_|___/\__\__,_|\__|
+                                  
+Simple query script for stats.xonotic.org
+
+Usage:
+  xonstat <player-id>
+
+License:
+  GNU GPL3

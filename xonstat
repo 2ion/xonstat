@@ -1,0 +1,43 @@
+#!/bin/bash
+# XonStats query script
+
+if [[ -z $1 ]] ; then
+  echo "Too few arguments. Usage: ${0##*/} <player-id>" >&2
+  exit 1
+fi
+
+tmp=$(mktemp)
+
+wget -qO "$tmp" "stats.xonotic.org/player/$1.json"
+
+nick=$(<"$tmp" jq -r '.[0].player.stripped_nick')
+joined=$(<"$tmp" jq -r '.[0].player.joined')
+elo_overall_elo=$(<"$tmp" jq -r '.[0].elos.overall.elo')
+elo_overall_mode=$(<"$tmp" jq -r '.[0].elos.overall.game_type_cd')
+elo_overall_games=$(<"$tmp" jq -r ".[0].elos.${elo_overall_mode}.games")
+elo_overall_rank=$(<"$tmp" jq -r ".[0].ranks.${elo_overall_mode}.rank")
+elo_overall_rank_outof=$(<"$tmp" jq -r ".[0].ranks.${elo_overall_mode}.max_rank")
+elo_overall_percentile=$(<"$tmp" jq -r ".[0].ranks.${elo_overall_mode}.percentile")
+last_played=$(<"$tmp" jq -r ".[0].overall_stats.overall.last_played")
+kdr=$(<"$tmp" jq -r ".[0].overall_stats.overall.k_d_ratio")
+total_kills=$(<"$tmp" jq -r ".[0].overall_stats.overall.total_kills")
+total_deaths=$(<"$tmp" jq -r ".[0].overall_stats.overall.total_deaths")
+cr=$(<"$tmp" jq -r ".[0].overall_stats.overall.cap_ratio")
+fck=$(<"$tmp" jq -r ".[0].overall_stats.overall.total_carrier_frags")
+
+#####
+
+printf "Nick        | %s\n"             "$nick"
+printf "Date joined | %s\n"             "$(date -d "$joined")"
+printf "Last played | %s\n"             "$(date -d "$last_played")"
+printf "K/D ratio   | %.*f (%d/%d)\n"   2 "$kdr" $total_kills $total_deaths
+printf "FCK         | %d\n"             $fck
+printf "Cap ratio   | %.*f\n"           2 "$cr"
+printf "Highest ELO | %.*f\n"           2 "$elo_overall_elo"
+printf "       Mode | %s\n"             "$elo_overall_mode"
+printf "       Rank | %d out of %d\n"   "$elo_overall_rank" "$elo_overall_rank_outof"
+printf " Percentile | %.*f\n"           2 "$elo_overall_percentile"
+
+#####
+
+rm -f "$tmp"
