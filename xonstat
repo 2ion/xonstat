@@ -6,33 +6,38 @@ if [[ -z $1 ]] ; then
   exit 1
 fi
 
+fixnull(){
+  if [[ $1 = null ]] ; then
+    case "$2" in
+      float) echo "0.0" ;;
+      int) echo "0" ;;
+      date) echo now ;;
+      other) echo "<empty>" ;;
+    esac
+  else
+    echo "$1"
+  fi
+  return 0
+}
+
 tmp=$(mktemp)
 
 wget -qO "$tmp" "stats.xonotic.org/player/$1.json"
 
 nick=$(<"$tmp" jq -r '.[0].player.stripped_nick')
 joined=$(<"$tmp" jq -r '.[0].player.joined')
-elo_overall_elo=$(<"$tmp" jq -r '.[0].elos.overall.elo')
-elo_overall_mode=$(<"$tmp" jq -r '.[0].elos.overall.game_type_cd')
-elo_overall_games=$(<"$tmp" jq -r ".[0].elos.${elo_overall_mode}.games")
-elo_overall_rank=$(<"$tmp" jq -r ".[0].ranks.${elo_overall_mode}.rank")
-elo_overall_rank_outof=$(<"$tmp" jq -r ".[0].ranks.${elo_overall_mode}.max_rank")
-if [[ $elo_overall_rank = null ]] ; then
-  elo_overall_rank=0
-fi
-if [[ $elo_overall_rank_outof = null ]] ; then
-  elo_overall_rank_outof=0
-fi
-elo_overall_percentile=$(<"$tmp" jq -r ".[0].ranks.${elo_overall_mode}.percentile")
-if [[ $elo_overall_percentile = null ]] ; then
-  elo_overall_percentile="0.0"
-fi
-last_played=$(<"$tmp" jq -r ".[0].overall_stats.overall.last_played")
-kdr=$(<"$tmp" jq -r ".[0].overall_stats.overall.k_d_ratio")
-total_kills=$(<"$tmp" jq -r ".[0].overall_stats.overall.total_kills")
-total_deaths=$(<"$tmp" jq -r ".[0].overall_stats.overall.total_deaths")
-cr=$(<"$tmp" jq -r ".[0].overall_stats.overall.cap_ratio")
-fck=$(<"$tmp" jq -r ".[0].overall_stats.overall.total_carrier_frags")
+elo_overall_elo=$(fixnull "$(<"$tmp" jq -r '.[0].elos.overall.elo')" float)
+elo_overall_mode=$(fixnull "$(<"$tmp" jq -r '.[0].elos.overall.game_type_cd')" other)
+elo_overall_games=$(fixnull "$(<"$tmp" jq -r ".[0].elos.${elo_overall_mode}.games")" int)
+elo_overall_rank=$(fixnull "$(<"$tmp" jq -r ".[0].ranks.${elo_overall_mode}.rank")" int)
+elo_overall_rank_outof=$(fixnull "$(<"$tmp" jq -r ".[0].ranks.${elo_overall_mode}.max_rank")" int)
+elo_overall_percentile=$(fixnull "$(<"$tmp" jq -r ".[0].ranks.${elo_overall_mode}.percentile")" float)
+last_played=$(fixnull "$(<"$tmp" jq -r ".[0].overall_stats.overall.last_played")" date)
+kdr=$(fixnull "$(<"$tmp" jq -r ".[0].overall_stats.overall.k_d_ratio")" float)
+total_kills=$(fixnull "$(<"$tmp" jq -r ".[0].overall_stats.overall.total_kills")" int)
+total_deaths=$(fixnull "$(<"$tmp" jq -r ".[0].overall_stats.overall.total_deaths")" int)
+cr=$(fixnull "$(<"$tmp" jq -r ".[0].overall_stats.overall.cap_ratio")" float)
+fck=$(fixnull "$(<"$tmp" jq -r ".[0].overall_stats.overall.total_carrier_frags")" int)
 
 #####
 
