@@ -17,7 +17,16 @@ elo_overall_mode=$(<"$tmp" jq -r '.[0].elos.overall.game_type_cd')
 elo_overall_games=$(<"$tmp" jq -r ".[0].elos.${elo_overall_mode}.games")
 elo_overall_rank=$(<"$tmp" jq -r ".[0].ranks.${elo_overall_mode}.rank")
 elo_overall_rank_outof=$(<"$tmp" jq -r ".[0].ranks.${elo_overall_mode}.max_rank")
+if [[ $elo_overall_rank = null ]] ; then
+  elo_overall_rank=0
+fi
+if [[ $elo_overall_rank_outof = null ]] ; then
+  elo_overall_rank_outof=0
+fi
 elo_overall_percentile=$(<"$tmp" jq -r ".[0].ranks.${elo_overall_mode}.percentile")
+if [[ $elo_overall_percentile = null ]] ; then
+  elo_overall_percentile="0.0"
+fi
 last_played=$(<"$tmp" jq -r ".[0].overall_stats.overall.last_played")
 kdr=$(<"$tmp" jq -r ".[0].overall_stats.overall.k_d_ratio")
 total_kills=$(<"$tmp" jq -r ".[0].overall_stats.overall.total_kills")
@@ -35,8 +44,8 @@ printf "FCK         | %d\n"             $fck
 printf "Cap ratio   | %.*f\n"           2 "$cr"
 printf "Highest ELO | %.*f\n"           2 "$elo_overall_elo"
 printf "       Mode | %s\n"             "$elo_overall_mode"
-printf "       Rank | %d out of %d\n"   "$elo_overall_rank" "$elo_overall_rank_outof"
-printf " Percentile | %.*f\n"           2 "$elo_overall_percentile"
+printf "       Rank | %d out of %d\n"   "${elo_overall_rank}" "${elo_overall_rank_outof}"
+printf " Percentile | %.*f\n"           2 "${elo_overall_percentile:-0.0}"
 
 #####
 
