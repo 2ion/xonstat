@@ -26,27 +26,26 @@ fixnull(){
 
 # MAIN()
 
-tmp=$(mktemp)
-wget -qO "$tmp" "stats.xonotic.org/player/$1.json" || { echo "Failed to query data." ; exit 1 ; }
+readonly data=$(wget -qO- "stats.xonotic.org/player/$1.json") || { echo "Failed to query data." ; exit 1 ; }
 
 # EXTRACT DATA
 
-nick=$(                              <"$tmp" jq -r '.[0].player.stripped_nick'                              )
-joined=$(                            <"$tmp" jq -r '.[0].player.joined'                                     )
-elo_overall_elo=$(        fixnull "$(<"$tmp" jq -r '.[0].elos.overall.elo')"                          float )
-elo_overall_mode=$(       fixnull "$(<"$tmp" jq -r '.[0].elos.overall.game_type_cd')"                 other )
-elo_overall_games=$(      fixnull "$(<"$tmp" jq -r ".[0].elos.${elo_overall_mode}.games")"            int   )
-elo_overall_rank=$(       fixnull "$(<"$tmp" jq -r ".[0].ranks.${elo_overall_mode}.rank")"            int   )
-elo_overall_rank_outof=$( fixnull "$(<"$tmp" jq -r ".[0].ranks.${elo_overall_mode}.max_rank")"        int   )
-elo_overall_percentile=$( fixnull "$(<"$tmp" jq -r ".[0].ranks.${elo_overall_mode}.percentile")"      float )
-last_played=$(            fixnull "$(<"$tmp" jq -r ".[0].overall_stats.overall.last_played")"         date  )
-kdr=$(                    fixnull "$(<"$tmp" jq -r ".[0].overall_stats.overall.k_d_ratio")"           float )
-total_kills=$(            fixnull "$(<"$tmp" jq -r ".[0].overall_stats.overall.total_kills")"         int   )
-total_deaths=$(           fixnull "$(<"$tmp" jq -r ".[0].overall_stats.overall.total_deaths")"        int   )
-cr=$(                     fixnull "$(<"$tmp" jq -r ".[0].overall_stats.overall.cap_ratio")"           float )
-total_caps=$(             fixnull "$(<"$tmp" jq -r ".[0].overall_stats.overall.total_captures")"      int   )
-total_pickups=$(          fixnull "$(<"$tmp" jq -r ".[0].overall_stats.overall.total_pickups")"       int   )
-fck=$(                    fixnull "$(<"$tmp" jq -r ".[0].overall_stats.overall.total_carrier_frags")" int   )
+nick=$(                              <<<"$data" jq -r '.[0].player.stripped_nick'                              )
+joined=$(                            <<<"$data" jq -r '.[0].player.joined'                                     )
+elo_overall_elo=$(        fixnull "$(<<<"$data" jq -r '.[0].elos.overall.elo')"                          float )
+elo_overall_mode=$(       fixnull "$(<<<"$data" jq -r '.[0].elos.overall.game_type_cd')"                 other )
+elo_overall_games=$(      fixnull "$(<<<"$data" jq -r ".[0].elos.${elo_overall_mode}.games")"            int   )
+elo_overall_rank=$(       fixnull "$(<<<"$data" jq -r ".[0].ranks.${elo_overall_mode}.rank")"            int   )
+elo_overall_rank_outof=$( fixnull "$(<<<"$data" jq -r ".[0].ranks.${elo_overall_mode}.max_rank")"        int   )
+elo_overall_percentile=$( fixnull "$(<<<"$data" jq -r ".[0].ranks.${elo_overall_mode}.percentile")"      float )
+last_played=$(            fixnull "$(<<<"$data" jq -r ".[0].overall_stats.overall.last_played")"         date  )
+kdr=$(                    fixnull "$(<<<"$data" jq -r ".[0].overall_stats.overall.k_d_ratio")"           float )
+total_kills=$(            fixnull "$(<<<"$data" jq -r ".[0].overall_stats.overall.total_kills")"         int   )
+total_deaths=$(           fixnull "$(<<<"$data" jq -r ".[0].overall_stats.overall.total_deaths")"        int   )
+cr=$(                     fixnull "$(<<<"$data" jq -r ".[0].overall_stats.overall.cap_ratio")"           float )
+total_caps=$(             fixnull "$(<<<"$data" jq -r ".[0].overall_stats.overall.total_captures")"      int   )
+total_pickups=$(          fixnull "$(<<<"$data" jq -r ".[0].overall_stats.overall.total_pickups")"       int   )
+fck=$(                    fixnull "$(<<<"$data" jq -r ".[0].overall_stats.overall.total_carrier_frags")" int   )
 
 # OUTPUT
 
@@ -60,7 +59,3 @@ printf "Highest ELO | %.*f\n"           2 "$elo_overall_elo"
 printf "       Mode | %s\n"               "$elo_overall_mode"
 printf "       Rank | %d out of %d\n"     "${elo_overall_rank}" "${elo_overall_rank_outof}"
 printf " Percentile | %.*f\n"           2 "${elo_overall_percentile:-0.0}"
-
-# CLEANUP
-
-rm -f "$tmp"
