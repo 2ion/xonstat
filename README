@@ -6,6 +6,12 @@ __  _____  _ __  ___| |_ __ _| |_
                                   
 Simple query script for stats.xonotic.org
 
+Installation:
+  * On Arch Linux, you may install from the AUR the 'xonstat' package;
+    see https://aur.archlinux.org/packages/xonstat-git for details.
+  * Otherwise, copy the xonstat script into a directory that is in your
+    $PATH.
+
 Usage:
   xonstat <player-id>
 
