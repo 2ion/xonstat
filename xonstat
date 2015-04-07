@@ -1,18 +1,22 @@
 #!/bin/bash
-# XonStats query script
 
-if [[ -z $1 ]] ; then
+# XonStats query script
+# http://stats.xonotic.org
+
+if [[ -z $1 || $1 = -h ]] ; then
   echo "Too few arguments. Usage: ${0##*/} <player-id>" >&2
   exit 1
 fi
 
+# FUNCTIONS
+
 fixnull(){
   if [[ $1 = null ]] ; then
     case "$2" in
-      float) echo "0.0" ;;
-      int) echo "0" ;;
-      date) echo now ;;
-      other) echo "<empty>" ;;
+      float)  echo "0.0"      ;;
+      int)    echo "0"        ;;
+      date)   echo now        ;;
+      other)  echo "<empty>"  ;;
     esac
   else
     echo "$1"
@@ -20,38 +24,43 @@ fixnull(){
   return 0
 }
 
+# MAIN()
+
 tmp=$(mktemp)
+wget -qO "$tmp" "stats.xonotic.org/player/$1.json" || { echo "Failed to query data." ; exit 1 ; }
 
-wget -qO "$tmp" "stats.xonotic.org/player/$1.json"
+# EXTRACT DATA
 
-nick=$(<"$tmp" jq -r '.[0].player.stripped_nick')
-joined=$(<"$tmp" jq -r '.[0].player.joined')
-elo_overall_elo=$(fixnull "$(<"$tmp" jq -r '.[0].elos.overall.elo')" float)
-elo_overall_mode=$(fixnull "$(<"$tmp" jq -r '.[0].elos.overall.game_type_cd')" other)
-elo_overall_games=$(fixnull "$(<"$tmp" jq -r ".[0].elos.${elo_overall_mode}.games")" int)
-elo_overall_rank=$(fixnull "$(<"$tmp" jq -r ".[0].ranks.${elo_overall_mode}.rank")" int)
-elo_overall_rank_outof=$(fixnull "$(<"$tmp" jq -r ".[0].ranks.${elo_overall_mode}.max_rank")" int)
-elo_overall_percentile=$(fixnull "$(<"$tmp" jq -r ".[0].ranks.${elo_overall_mode}.percentile")" float)
-last_played=$(fixnull "$(<"$tmp" jq -r ".[0].overall_stats.overall.last_played")" date)
-kdr=$(fixnull "$(<"$tmp" jq -r ".[0].overall_stats.overall.k_d_ratio")" float)
-total_kills=$(fixnull "$(<"$tmp" jq -r ".[0].overall_stats.overall.total_kills")" int)
-total_deaths=$(fixnull "$(<"$tmp" jq -r ".[0].overall_stats.overall.total_deaths")" int)
-cr=$(fixnull "$(<"$tmp" jq -r ".[0].overall_stats.overall.cap_ratio")" float)
-fck=$(fixnull "$(<"$tmp" jq -r ".[0].overall_stats.overall.total_carrier_frags")" int)
+nick=$(                              <"$tmp" jq -r '.[0].player.stripped_nick'                              )
+joined=$(                            <"$tmp" jq -r '.[0].player.joined'                                     )
+elo_overall_elo=$(        fixnull "$(<"$tmp" jq -r '.[0].elos.overall.elo')"                          float )
+elo_overall_mode=$(       fixnull "$(<"$tmp" jq -r '.[0].elos.overall.game_type_cd')"                 other )
+elo_overall_games=$(      fixnull "$(<"$tmp" jq -r ".[0].elos.${elo_overall_mode}.games")"            int   )
+elo_overall_rank=$(       fixnull "$(<"$tmp" jq -r ".[0].ranks.${elo_overall_mode}.rank")"            int   )
+elo_overall_rank_outof=$( fixnull "$(<"$tmp" jq -r ".[0].ranks.${elo_overall_mode}.max_rank")"        int   )
+elo_overall_percentile=$( fixnull "$(<"$tmp" jq -r ".[0].ranks.${elo_overall_mode}.percentile")"      float )
+last_played=$(            fixnull "$(<"$tmp" jq -r ".[0].overall_stats.overall.last_played")"         date  )
+kdr=$(                    fixnull "$(<"$tmp" jq -r ".[0].overall_stats.overall.k_d_ratio")"           float )
+total_kills=$(            fixnull "$(<"$tmp" jq -r ".[0].overall_stats.overall.total_kills")"         int   )
+total_deaths=$(           fixnull "$(<"$tmp" jq -r ".[0].overall_stats.overall.total_deaths")"        int   )
+cr=$(                     fixnull "$(<"$tmp" jq -r ".[0].overall_stats.overall.cap_ratio")"           float )
+total_caps=$(             fixnull "$(<"$tmp" jq -r ".[0].overall_stats.overall.total_captures")"      int   )
+total_pickups=$(          fixnull "$(<"$tmp" jq -r ".[0].overall_stats.overall.total_pickups")"       int   )
+fck=$(                    fixnull "$(<"$tmp" jq -r ".[0].overall_stats.overall.total_carrier_frags")" int   )
 
-#####
+# OUTPUT
 
-printf "Nick        | %s\n"             "$nick"
-printf "Date joined | %s\n"             "$(date -d "$joined")"
-printf "Last played | %s\n"             "$(date -d "$last_played")"
-printf "K/D ratio   | %.*f (%d/%d)\n"   2 "$kdr" $total_kills $total_deaths
-printf "FCK         | %d\n"             $fck
-printf "Cap ratio   | %.*f\n"           2 "$cr"
+printf "Nick        | %s\n"               "$nick"
+printf "Date joined | %s\n"               "$(date -d "$joined")"
+printf "Last played | %s\n"               "$(date -d "$last_played")"
+printf "K/D ratio   | %.*f (%d/%d)\n"   2 "$kdr" "$total_kills" "$total_deaths"
+printf "FCK         | %d\n"               "$fck"
+printf "C/P ratio   | %.*f (%d/%d)\n"   2 "$cr" "$total_caps" "$total_pickups"
 printf "Highest ELO | %.*f\n"           2 "$elo_overall_elo"
-printf "       Mode | %s\n"             "$elo_overall_mode"
-printf "       Rank | %d out of %d\n"   "${elo_overall_rank}" "${elo_overall_rank_outof}"
+printf "       Mode | %s\n"               "$elo_overall_mode"
+printf "       Rank | %d out of %d\n"     "${elo_overall_rank}" "${elo_overall_rank_outof}"
 printf " Percentile | %.*f\n"           2 "${elo_overall_percentile:-0.0}"
 
-#####
+# CLEANUP
 
 rm -f "$tmp"
