@@ -43,7 +43,7 @@ readonly data=$(wget -qO- "stats.xonotic.org/player/$1.json") || { echo "Failed 
 
 # Check validity: The server sends an empty reply if the player id is
 # invalid or doesn't exist.
-if [[ -z "$cap" ]] ; then
+if [[ -z "$data" ]] ; then
   echo "No data available for player $1."
   exit 0
 fi
