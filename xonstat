@@ -41,6 +41,13 @@ fixnull(){
 
 readonly data=$(wget -qO- "stats.xonotic.org/player/$1.json") || { echo "Failed to query data." ; exit 1 ; }
 
+# Check validity: The server sends an empty reply if the player id is
+# invalid or doesn't exist.
+if [[ -z "$cap" ]] ; then
+  echo "No data available for player $1."
+  exit 0
+fi
+
 # EXTRACT DATA
 
 nick=$(                              <<<"$data" jq -r '.[0].player.stripped_nick'                              )
