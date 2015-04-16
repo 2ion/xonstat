@@ -21,6 +21,13 @@ if [[ -z $1 || $1 = -h ]] ; then
   exit 1
 fi
 
+readonly RCFILE=$HOME/.xonstatrc
+ELO=0
+
+if [[ -e "$RCFILE" ]] ; then
+  . "$RCFILE"
+fi
+
 # FUNCTIONS
 
 fixnull(){
@@ -67,6 +74,8 @@ total_caps=$(             fixnull "$(<<<"$data" jq -r ".[0].overall_stats.overal
 total_pickups=$(          fixnull "$(<<<"$data" jq -r ".[0].overall_stats.overall.total_pickups")"       int   )
 fck=$(                    fixnull "$(<<<"$data" jq -r ".[0].overall_stats.overall.total_carrier_frags")" int   )
 
+elo_delta="Δ$( bc -l <<< "$elo_overall_elo - $ELO" )"
+
 # OUTPUT
 
 printf "Nick        | %s\n"               "$nick"
@@ -75,7 +84,11 @@ printf "Last played | %s\n"               "$(date -d "$last_played")"
 printf "K/D ratio   | %.*f (%d/%d)\n"   2 "$kdr" "$total_kills" "$total_deaths"
 printf "FCK         | %d\n"               "$fck"
 printf "C/P ratio   | %.*f (%d/%d)\n"   2 "$cr" "$total_caps" "$total_pickups"
-printf "Highest ELO | %.*f\n"           2 "$elo_overall_elo"
+printf "Highest ELO | %.*f (%s)\n"      2 "$elo_overall_elo" "$elo_delta"
 printf "       Mode | %s\n"               "$elo_overall_mode"
 printf "       Rank | %d out of %d\n"     "${elo_overall_rank}" "${elo_overall_rank_outof}"
 printf " Percentile | %.*f\n"           2 "${elo_overall_percentile:-0.0}"
+
+cat > "$RCFILE" <<EOF
+ELO=$elo_overall_elo
+EOF
