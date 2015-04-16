@@ -22,7 +22,7 @@ if [[ -z $1 || $1 = -h ]] ; then
 fi
 
 readonly RCFILE=$HOME/.xonstatrc
-ELO=0
+declare -A ELO
 
 if [[ -e "$RCFILE" ]] ; then
   . "$RCFILE"
@@ -74,7 +74,7 @@ total_caps=$(             fixnull "$(<<<"$data" jq -r ".[0].overall_stats.overal
 total_pickups=$(          fixnull "$(<<<"$data" jq -r ".[0].overall_stats.overall.total_pickups")"       int   )
 fck=$(                    fixnull "$(<<<"$data" jq -r ".[0].overall_stats.overall.total_carrier_frags")" int   )
 
-elo_delta="Δ$( bc -l <<< "$elo_overall_elo - $ELO" )"
+elo_delta="Δ$( bc -l <<< "$elo_overall_elo - ${ELO[$1]:-0}" )"
 
 # OUTPUT
 
@@ -89,6 +89,6 @@ printf "       Mode | %s\n"               "$elo_overall_mode"
 printf "       Rank | %d out of %d\n"     "${elo_overall_rank}" "${elo_overall_rank_outof}"
 printf " Percentile | %.*f\n"           2 "${elo_overall_percentile:-0.0}"
 
-cat > "$RCFILE" <<EOF
-ELO=$elo_overall_elo
-EOF
+# RC FILE
+
+echo "ELO[$1]=$elo_overall_elo" >> "$RCFILE"
