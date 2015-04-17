@@ -1,0 +1,46 @@
+.TH XONSTAT 1 xonstat\-git
+
+.SH NAME
+xonstat \- query script for stats.xonotic.org
+
+.SH SYNOPSIS
+.B xonstat
+[-h]
+player-id
+
+.SH DESCRIPTION
+xonstat is a simple query script for the stats.xonotic.org API. It
+displays information on the player with the given ID. It also keeps
+track of the queried players' ELO deltas.
+.P
+The script creates a RC file
+.B $HOME/.xonstatrc
+which it uses when computing ELO deltas. The file can be safely deleted
+at any time.
+
+.SH OPTIONS
+.TP
+.B \-v
+Prints usage information to standard output, then exits.
+.SH PROPERTIES
+
+.IP - 2
+Player nick
+.IP - 2
+Date when the player registered with XonStats
+.IP - 2
+Date when the player last played
+.IP - 2
+Kill/Death ratio
+.IP - 2
+Total # of flag carrier kills
+.IP - 2
+Capture/Pickup ratio, relevent only in CTF mode
+.IP - 2
+Highest ELO with game type, rank, percentile and ELO delta
+
+.SH KNOWN BUGS
+There are hickups when a player profile doesn't provide some of the
+queried data keys. This happens when the player hasn't played yet. You
+surely couldn't be interested in non-players' data anyway, wouldn't you?
+

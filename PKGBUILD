@@ -27,4 +27,5 @@ package() {
   cd "$srcdir/${pkgname%-git}"
   install -Dm755 xonstat "$pkgdir"/usr/bin/xonstat
   install -Dm644 LICENSE "$pkgdir"/usr/share/doc/xonstat/LICENSE
+  install -Dm644 xonstat.1 "$pkgdir"/usr/share/man/man1/xonstat.1
 }
