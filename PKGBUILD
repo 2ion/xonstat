@@ -12,6 +12,7 @@ provides=("${pkgname%-git}")
 conflicts=("${pkgname%-git}")
 source=('git+https://github.com/2ion/xonstat.git#branch=master')
 md5sums=('SKIP')
+install=${pkgname%-git}.install
 
 pkgver() {
   cd "$srcdir/${pkgname%-git}"
