@@ -1,9 +1,9 @@
 
-__  _____  _ __  ___| |_ __ _| |_ 
+__  _____  _ __  ___| |_ __ _| |_
 \ \/ / _ \| '_ \/ __| __/ _` | __|
- >  < (_) | | | \__ \ || (_| | |_ 
+ >  < (_) | | | \__ \ || (_| | |_
 /_/\_\___/|_| |_|___/\__\__,_|\__|
-                                  
+
 Simple query script for stats.xonotic.org
 
 Installation:
@@ -17,3 +17,16 @@ Usage:
 
 License:
   GNU GPL3
+
+Example output:
+  $ xonstat 9214
+  Nick        | [Regulars] Isi Going
+  Date joined | Fri 22 Jun 21:54:32 CEST 2012
+  Last played | Sat 11 Apr 20:22:51 CEST 2015
+  K/D ratio   | 1.99 (94557/47588)
+  FCK         | 27276
+  C/P ratio   | 0.45 (14119/31399)
+  Highest ELO | 1494.54 (Δ1494.5371921215794)
+         Mode | ctf
+         Rank | 2 out of 631
+   Percentile | 99.84
